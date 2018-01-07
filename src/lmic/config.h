@@ -5,11 +5,11 @@
 // gcc commandline. Since Arduino does not allow easily modifying the
 // compiler commandline, use this file instead.
 
-#define CFG_eu868 1
-//#define CFG_us915 1
+// #define CFG_eu868 1
+#define CFG_us915 1
 // This is the SX1272/SX1273 radio, which is also used on the HopeRF
 // RFM92 boards.
-//#define CFG_sx1272_radio 1
+// #define CFG_sx1272_radio 1
 // This is the SX1276/SX1277/SX1278/SX1279 radio, which is also used on
 // the HopeRF RFM95 boards.
 #define CFG_sx1276_radio 1
@@ -30,7 +30,7 @@
 // Enable this to allow using printf() to print to the given serial port
 // (or any other Print object). This can be easy for debugging. The
 // current implementation only works on AVR, though.
-//#define LMIC_PRINTF_TO Serial
+#define LMIC_PRINTF_TO Serial
 
 // Any runtime assertion failures are printed to this serial port (or
 // any other Print object). If this is unset, any failures just silently
@@ -63,7 +63,7 @@
 // hear gateways). This should probably only be used when debugging
 // and/or when talking to the radio directly (e.g. like in the "raw"
 // example).
-//#define DISABLE_INVERT_IQ_ON_RX
+#define DISABLE_INVERT_IQ_ON_RX
 
 // This allows choosing between multiple included AES implementations.
 // Make sure exactly one of these is uncommented.

@@ -31,11 +31,12 @@
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
-    .nss = 6,
-    .rxtx = LMIC_UNUSED_PIN,
-    .rst = 5,
-    .dio = {2, 3, 4},
+  .nss = 8,  
+  .rxtx = LMIC_UNUSED_PIN,
+  .rst = 4,
+  .dio = {3,6,11}
 };
+
 
 
 // These callbacks are only used in over-the-air activation, so they are

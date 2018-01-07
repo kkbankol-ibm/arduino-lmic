@@ -28,7 +28,6 @@
  * Do not forget to define the radio type correctly in config.h.
  *
  *******************************************************************************/
-
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
@@ -36,15 +35,15 @@
 // LoRaWAN NwkSKey, network session key
 // This is the default Semtech key, which is used by the early prototype TTN
 // network.
-static const PROGMEM u1_t NWKSKEY[16] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C };
+static const PROGMEM u1_t NWKSKEY[16] = { 0x32, 0x87, 0x63, 0xA7, 0x55, 0x86, 0x5D, 0x51, 0xF9, 0x1A, 0xD2, 0x04, 0xF9, 0xF9, 0xAA, 0xEF };
 
 // LoRaWAN AppSKey, application session key
 // This is the default Semtech key, which is used by the early prototype TTN
 // network.
-static const u1_t PROGMEM APPSKEY[16] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C };
+static const u1_t PROGMEM APPSKEY[16] = { 0x12, 0xCE, 0xD3, 0x82, 0xB5, 0xE1, 0x78, 0x9F, 0x8E, 0xE2, 0x9C, 0xD8, 0x0A, 0xB8, 0x29, 0xC0 };
 
 // LoRaWAN end-device address (DevAddr)
-static const u4_t DEVADDR = 0x03FF0001 ; // <-- Change this address for every node!
+static const u4_t DEVADDR = 0x26021C2B ; // <-- Change this address for every node!
 
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
@@ -53,19 +52,27 @@ void os_getArtEui (u1_t* buf) { }
 void os_getDevEui (u1_t* buf) { }
 void os_getDevKey (u1_t* buf) { }
 
-static uint8_t mydata[] = "Hello, world!";
+static uint8_t mydata[] = "Hello, World!";
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 60;
+//const unsigned TX_INTERVAL = 60;
+const unsigned TX_INTERVAL = 15;
 
 // Pin mapping
+//const lmic_pinmap lmic_pins = {
+//    .nss = 6,
+//    .rxtx = LMIC_UNUSED_PIN,
+//    .rst = 5,
+//    .dio = {2, 3, 4},
+//};
+// https://github.com/matthijskooijman/arduino-lmic#pin-mapping
 const lmic_pinmap lmic_pins = {
-    .nss = 6,
-    .rxtx = LMIC_UNUSED_PIN,
-    .rst = 5,
-    .dio = {2, 3, 4},
+  .nss = 8,
+  .rxtx = LMIC_UNUSED_PIN,
+  .rst = 4,
+  .dio = {3,6,11}
 };
 
 void onEvent (ev_t ev) {
@@ -133,19 +140,72 @@ void onEvent (ev_t ev) {
     }
 }
 
+byte sound;
+
 void do_send(osjob_t* j){
     // Check if there is not a current TX/RX job running
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+//        int micPin = A0;    // microphone sensor input
+//        int ledPin = 13;      // select the pin for the LED
+//        int micValue = 0;  // variable to store the value coming from the mic sensor
+
+        // going to take 5 samples 
+        int sensorValues[50];
+//        sensorValues[0] = 250;
+//        char packet[200] = "";
+//        char sensorValue[3];
+        Serial.println(F("sampling sensor"));
+
+        
+        for (int i=0 ; i < 50 ; i=i+1) {          
+          delay(100);
+      //    strcat(sensorValue, "15");
+//          Serial.println(F("sampling sensor"));
+          int micValue = constrain(analogRead(A0), 0, 200);
+          sensorValues[i] = micValue; //byte(micValue);
+//          sprintf(sensorValue, "%d,", micValue);
+//          char val = micValue;
+//          char delimiter = '.';
+//          String value = constrain(analogRead(A0), 0, 100)
+//          sensorValue[0+i] = 
+//          strcat(packet, sensorValue);
+//          strcat(sensorValue, delimiter);
+        }
+        Serial.println(F("done collecting sensor samples"));
+        Serial.println(F(sensorValues));
+//        int sound = constrain(analogRead(A0), 0, 100) ; // String("Sound level: " + analogRead(A0));
+        char floatStr[10] ;
+        uint8_t lmic_packet[40];
+//        sprintf(floatStr, "%d,", sound);
+        
+//        Serial.println(F("floatStr"));
+//        Serial.println(F(floatStr));
+//        strcat(sound, floatStr);
+//        strcpy((char *)lmic_packet, sensorValues);        
+//        uint8_t value = sound;
+        Serial.println(F("sound values"));
+        Serial.println(F(sensorValues));
+//        Serial.println(packet);
+//        Serial.println(value);
+//        char copy[30];
+//        uint8_t mydata = sound;
+//        uint8_t mydata[] = sensorValue; // "Sound level: " + String(analogRead(A0));
+//        static uint8_t mydata[] = "Hello, World!"; //"Sound level: 10.0";
+//        LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+        LMIC_setTxData2(1, (byte *)sensorValues, 50, 0);
+        Serial.println(F("Printing mydata"));
+//        Serial.println(F(mydata));
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
 }
 
 void setup() {
+    delay(1000);
+    pinMode(A0, INPUT_PULLUP);
     Serial.begin(115200);
     Serial.println(F("Starting"));
 
@@ -155,11 +215,18 @@ void setup() {
     digitalWrite(VCC_ENABLE, HIGH);
     delay(1000);
     #endif
-
+//    int micPin = A0;    // microphone sensor input
+//    int ledPin = 13;      // select the pin for the LED
+//    int micValue = 0;  // variable to store the value coming from the mic sensor
+//
+//    pinMode(13, OUTPUT);
+//    pinMode(micPin, INPUT_PULLUP);
+    
     // LMIC init
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
+    LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
 
     // Set static session parameters. Instead of dynamically establishing a session
     // by joining the network, precomputed session parameters are be provided.
@@ -205,6 +272,7 @@ void setup() {
     // but only one group of 8 should (a subband) should be active
     // TTN recommends the second sub band, 1 in a zero based count.
     // https://github.com/TheThingsNetwork/gateway-conf/blob/master/US-global_conf.json
+    Serial.println(F("Publishing to us915 freq"));
     LMIC_selectSubBand(1);
     #endif
 
@@ -221,6 +289,17 @@ void setup() {
     do_send(&sendjob);
 }
 
+void readSensor() {
+}
+
 void loop() {
+//    mydata[] = constrain(analogRead(micPin), 0, 100);
+    //    micValue = constrain(analogRead(micPin), 0, 100); //set sound detect clamp 0-100  
+//    Serial.println( "micValue ");
+//    Serial.println( micValue );
+//    Serial.print("incoming value from microphone =");
+//    //  Serial.println( analogRead(micPin) ) ;
+//    Serial.println( analogRead(A0), DEC ) ;
+
     os_runloop_once();
 }
